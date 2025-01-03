@@ -8,8 +8,8 @@
 extern "C" {
 #endif
 
-
-
+#include "bytey/io.h"
+#include "bytey/out/global.h"
 
 #ifdef __cplusplus
 }

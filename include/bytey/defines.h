@@ -8,10 +8,13 @@
 // --- LEAFS --- //
 
 // --- BYTEY OPCODE --- //
-// other
+// error handling
+#define BY_EOF 0x00 // EOF is converted to this in bygetc
+// directives
 #define BY_COMPILER_INTERACT 0x01
 #define BY_GLOBAL 0x02
 #define BY_IDENT 0x03
+// memory
 #define BY_FILL 0x04
 // control flow
 #define BY_DECLARE_SYMBOL 0x10
@@ -28,6 +31,6 @@
 #define BY_DIV 0x23
 #define BY_MUL 0x24
 #define BY_MOD 0x25
-// error handling
-#define BY_EOF 0x00 // EOF is converted to this in bygetc
+
+#define BY_OPCODE_TYPE unsigned char
 
