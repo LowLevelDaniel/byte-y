@@ -1,47 +1,39 @@
 #include "bytey/io.h"
-#include "bytey/defines.h"
 
-#include <string.h>
 
-int bygetc(BYTEY_INPUT *byin) {
-  if (byin->src_type == BYTEY_INPUT_SRC_TYPE_FILE) {
-    int in = fgetc(byin->src.file);
-    if (in == EOF) return BY_EOF;
-    return in;
-  } else if (byin->src_type == BYTEY_INPUT_SRC_TYPE_PTR) {
-    char *bptr = (char*)byin->src.ptr;
-    char in = *(++bptr);
-    if (in == '\0') return BY_EOF;
-    return (int)in;
-  }
-  ERR("byin_getc failed to find src_type");
-  return BY_EOF;
-}
-
-bool by_create_file(BYTEY_INPUT *writer, FILE *file) {
-  writer->src_type = BYTEY_INPUT_SRC_TYPE_FILE;
-  writer->src.file = file;
-  return false;
-}
-bool by_create_ptr(BYTEY_INPUT *writer, char *ptr) {
-  writer->src_type = BYTEY_INPUT_SRC_TYPE_PTR;
-  writer->src.ptr = ptr;
+bool by_create_file(BYTEY_STREAM *stream, FILE *file) {
+  stream->src.file = file;
   return false;
 }
 
-bool bywrite(BYTEY_INPUT *writer, void *ptr, size_t bsize) {
-  switch (writer->src_type) {
-    case BYTEY_INPUT_SRC_TYPE_FILE:
-      fwrite(ptr, 1, bsize, writer->src.file);
-      break;
-    case BYTEY_INPUT_SRC_TYPE_PTR:
-      memcpy(writer->src.ptr, ptr, bsize);
-      char *byte_ptr = ((char*)writer->src.ptr);
-      byte_ptr += bsize;
-      break;
-    default:
-      ERR("Invalid BYTEY_INPUT_SRC_TYPE %d", writer->src_type);
-      return true;
-  }
-  return false;  
+int bygetc(BYTEY_STREAM *stream) {
+  return fgetc(stream->src.file);
+}
+BY_OPCODE_TYPE bygetop(BYTEY_STREAM *stream) {
+  BY_OPCODE_TYPE type;
+  size_t bread = fread(&type, sizeof(BY_OPCODE_TYPE), 1, stream->src.file);
+  if (bread != 1) return BY_EOF;
+  return type;
+}
+bool byread(BYTEY_STREAM *stream, void *ptr, size_t bsize) {
+  size_t bread = fread(ptr, 1, bsize, stream->src.file);
+  if (bread != bsize) return true;
+  return false;
+}
+
+bool byputc(int value, BYTEY_STREAM *stream) {
+  fputc(value, stream->src.file);
+  return false;
+}
+bool byputop(BY_OPCODE_TYPE opcode, BYTEY_STREAM *stream) {
+  fwrite(&opcode, sizeof(opcode), 1, stream->src.file);
+  return false;
+}
+bool bywrite(BYTEY_STREAM *stream, void *ptr, size_t bsize) {
+  fwrite(ptr, 1, bsize, stream->src.file);
+  return false;
+}
+
+size_t bytell(BYTEY_STREAM *stream) {
+  return ftell(stream->src.file);
 }

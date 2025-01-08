@@ -1,39 +1,78 @@
 #include "bytey/in/parser.h"
+#include <stdlib.h>
 
-
-// Move This
-
-bool byin_write_machine_ihlt(BYTEY_IN_READER *byin) { // halt for interrupt
-  char opcode;
-  switch (byin->arch) {
-  case BYTEY_ARCH_TYPE_X86:
-    opcode = 0xF4;
-    if (by_write(byin->writer, &opcode, sizeof(char))) return true;
-    
-  default:
-    ERR("Invalid Architecture"); 
+// Program Memory
+bool byin_write_machine_fill(BYTEY_STREAM *ins, BYTEY_STREAM *outs) {
+  // --- input --- //
+  // get index
+  size_t index;
+  if (byread(ins, &index, sizeof(index))) {
+    ERR("BY_FILL - Uncompleted Opcode 0");
+    return true;
   }
+  // get value
+  int value = bygetc(ins);
+  if (value == EOF) {
+    ERR("BY_FILL - Uncompleted Opcode 1");
+    return true;
+  }
+
+  // --- output --- //
+  for (long int cindex = bytell(outs); cindex < index; ++cindex) {
+    if (byputc(value, outs)) {
+      ERR("BY_FILL - byputc(outs) failed");
+      return true;
+    }
+  }
+
   return false;
 }
 
-// END(Move This)
+bool byin_write_machine_insert(BYTEY_STREAM *ins, BYTEY_STREAM *outs) {
+  // --- input --- //
+  // get sizeof
+  size_t _sizeof;
+  if (byread(ins, &_sizeof, sizeof(_sizeof))) {
+    ERR("BY_INSERT - Uncompleted Opcode 0");
+    return true;
+  }
 
-bool byin_parse(BYTEY_IN_READER *byin) {
+  // get value
+  void *value = malloc(_sizeof);
+  if (byread(ins, value, _sizeof)) {
+    ERR("BY_INSERT - Uncompleted Opcode 1");
+    return true;
+  }
 
-  for (BY_OPCODE_TYPE opcode = bygetc(byin->reader); opcode != BY_EOF; opcode = bygetc(byin->reader)) {
+  // --- output --- //
+  if (bywrite(outs, value, _sizeof)) {
+    ERR("BY_INSERT - bywrite(outs) failed");
+    return true;
+  }
+
+  return false;
+}
+
+// END
+
+bool byin_parse(BYTEY_STREAM *ins, BYTEY_STREAM *outs) {
+  BY_OPCODE_TYPE opcode = bygetop(ins);
+  for (; opcode != BY_EOF; opcode = bygetop(ins)) {
     switch (opcode) {
     // directives
-
-    // memory
+    // program memory
     case BY_FILL:
-      ERR("BY_FILL is NotImplementedYet");
-      return true;
+      if (byin_write_machine_fill(ins,outs)) return true;
+      break;
+    case BY_INSERT:
+      if (byin_write_machine_insert(ins,outs)) return true;
+      break;
     // control flow 
-    case BY_IHLT: if (byin_write_machine_ihlt(byin)) return true; break;
     // error handling
     default:
       ERR("Invalid opcode in bytey file");
       return true;
     };
   }
+  return false;
 }

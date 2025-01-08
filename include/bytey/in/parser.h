@@ -10,7 +10,7 @@ extern "C" {
 
 #include "bytey/in/global.h"
 
-bool byin_parse(BYTEY_IN_READER *byin);
+bool byin_parse(BYTEY_STREAM *ins, BYTEY_STREAM *outs);
 
 #ifdef __cplusplus
 }

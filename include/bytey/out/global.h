@@ -8,13 +8,10 @@
 extern "C" {
 #endif
 
+#include <stddef.h> // size_t
 #include <stdbool.h>
 #include "bytey/io.h"
 #include "bytey/defines.h"
-
-#define BYTEY_OUT_WRITER BYTEY_INPUT
-#define BYTEY_OUT_WRITER_TO_BYTEY_INPUT(bytey_out_writer) \
-  bytey_out_writer // no casting needed right now
 
 #ifdef __cplusplus
 }

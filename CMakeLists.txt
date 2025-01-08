@@ -7,8 +7,7 @@ add_library(by SHARED
 src/io.c
 # out  
   src/out/global.c
-  src/out/directives.c
-  src/out/control_flow.c
+  src/out/program_memory.c
 # in
   src/in/global.c
   src/in/parser.c
