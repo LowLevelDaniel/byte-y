@@ -1,5 +1,7 @@
-#include "bytey/in/parser.h"
+#include "bytey/main.h"
+#include "src/in/lex.h"
 #include <stdlib.h>
+
 
 // Program Memory
 bool byin_write_machine_fill(BYTEY_STREAM *ins, BYTEY_STREAM *outs) {
@@ -53,26 +55,109 @@ bool byin_write_machine_insert(BYTEY_STREAM *ins, BYTEY_STREAM *outs) {
   return false;
 }
 
+bool byin_get_type(BYTEY_STREAM *ins, struct TokenBaseVal *val) {
+  char byte = bygetc(ins);
+  switch (byte) {
+  case BY_TYPE_SB:
+    break;
+  case BY_TYPE_UB:
+    break;
+  case BY_TYPE_SW:
+    break;
+  case BY_TYPE_UW:
+    break;
+  case BY_TYPE_SL:
+    break;
+  case BY_TYPE_UL:
+    break;
+  case BY_TYPE_SQ:
+    break;
+  case BY_TYPE_UQ:
+    break;
+
+  case BY_TYPE_FH:
+    break;
+  case BY_TYPE_FF:
+    break;
+  case BY_TYPE_FD:
+    break;
+  case BY_TYPE_FL:
+    break;
+  default:
+    ERR("Invalid Type");
+    return true;
+  }
+  return false;
+}
+
 // END
 
-bool byin_parse(BYTEY_STREAM *ins, BYTEY_STREAM *outs) {
-  BY_OPCODE_TYPE opcode = bygetop(ins);
-  for (; opcode != BY_EOF; opcode = bygetop(ins)) {
+bool byin_lex(BYTEY_STREAM *ins, BYTEY_STREAM *outs, BYTEY_ARENA *arena) {
+  for (BY_OPCODE_TYPE opcode = bygetop(ins); opcode != BY_EOF; opcode = bygetop(ins)) {
+    union {
+      struct TokenProgram prog;
+      struct TokenImm imm;
+      struct TokenVar var;
+      struct TokenAddr addr;
+    } tok;
     switch (opcode) {
-    // directives
-    // program memory
-    case BY_FILL:
-      if (byin_write_machine_fill(ins,outs)) return true;
+    // DIRECTIVE
+    // PROGRAM
+    case BY_PROGRAM_INSERT: {
+      tok.prog.type = BY_PROGRAM_INSERT;
+      tok.prog.multiple = 1;
+
+      if (byread(ins, &tok.prog.bytes_sizeof, sizeof(tok.prog.bytes_sizeof))) {
+        ERR("BY_PEROGRAM_INSERT - 0");
+        return true;
+      }
+
+      struct TokenProgram *tokbuf = (struct TokenProgram *)BYTEY_ARENA_CURRBUFF(arena);
+      BYTEY_ARENA_PUSH(arena, &tok, sizeof(tok.prog) + tok.prog.bytes_sizeof - sizeof(tok.prog.bytes));
+
+      if (byread(arena, &tokbuf.bytes, tok.prog.bytes_sizeof)) {
+        ERR("BY_PEROGRAM_INSERT - 1");
+        return true;
+      }
       break;
-    case BY_INSERT:
-      if (byin_write_machine_insert(ins,outs)) return true;
+    } case BY_PROGRAM_FILL: {
+      tok.prog.type = BY_PROGRAM_FILL;
+
+      if (byread(ins, &tok.prog.multiple, sizeof(tok.prog.multiple))) {
+        ERR("BY_PEROGRAM_FILL - 0");
+        return true;
+      }
+
+      if (byread(ins, &tok.prog.bytes_sizeof, sizeof(tok.prog.bytes_sizeof))) {
+        ERR("BY_PEROGRAM_FILL - 1");
+        return true;
+      }
+
+      struct TokenProgram *tokbuf = (struct TokenProgram *)BYTEY_ARENA_BUFFER(arena);
+      BYTEY_ARENA_PUSH(arena, &tok, sizeof(tok.prog) + tok.prog.bytes_sizeof - sizeof(tok.prog.bytes));
+
+      if (byread(arena, &tokbuf.bytes, tok.prog.bytes_sizeof)) {
+        ERR("BY_PEROGRAM_FILL - 2");
+        return true;
+      }
       break;
-    // control flow 
-    // error handling
+    }
+    // VALUE
+    case BY_VALUE_VAR: {
+    } 
+    // ERROR
     default:
-      ERR("Invalid opcode in bytey file");
+      ERR("Invalid directive opcode'" BY_OPCODE_PRINT "'", opcode);
       return true;
-    };
+    }
   }
+
+  return false;
+}
+
+
+
+bool byin_parse(BYTEY_STREAM *ins, BYTEY_STREAM *outs) {
+  
   return false;
 }

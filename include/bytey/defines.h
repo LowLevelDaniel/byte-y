@@ -8,30 +8,35 @@
 // --- LEAFS --- //
 
 // --- BYTEY OPCODE --- //
-// error handling
-#define BY_EOF 0x00 // EOF is converted to this in bygetc
-// directives
-#define BY_COMPILER_INTERACT 0x10
-#define BY_GLOBAL 0x11
-#define BY_IDENT 0x12
-#define BY_FILL 0x13
-#define BY_INSERT 0x14
-// memory
-// control flow
-#define BY_DECLARE_SYMBOL 0x20
-#define BY_DECLARE_OPTIMIZED_SYMBOL 0x21
-#define BY_CALL 0x22
-#define BY_JMP 0x23
-#define BY_RET 0x24
-#define BY_SCOPE 0x25 // stack scope
-#define BY_IHLT 0x26 // interrupt halt
-// operands
-#define BY_CMP 0x30
-#define BY_ADD 0x31
-#define BY_SUB 0x32
-#define BY_DIV 0x33
-#define BY_MUL 0x34
-#define BY_MOD 0x35
 
-#define BY_OPCODE_TYPE unsigned char
+// SECTION INTERNAL
+#define BY_SECTION_EOF 0x00
+
+// SECTION DIRECTIVE
+#define BY_DIRECTIVE_MATHIFY 0x0010
+// SECTION PROGRAM
+#define BY_PROGRAM_INSERT 0x0020
+#define BY_PROGRAM_FILL 0x00021
+// SECTION VALUE
+#define BY_VALUE_VAR 0x0030
+// SECTION CONTROL FLOW
+#define BY_CONTROL_FLOW_CALL 0x0040
+#define BY_CONTROL_FLOW_JMP 0x0041
+#define BY_CONTROL_FLOW_RET 0x0042
+#define BY_CONTROL_FLOW_INT 0x0043
+#define BY_CONTROL_FLOW_SYSCALL 0x0044
+#define BY_CONTROL_FLOW_IRET 0x0045
+#define BY_CONTROL_FLOW_IHLT 0x0046
+#define BY_CONTROL_FLOW_EHLT 0x0047
+// SECTION OPERAND
+#define BY_OPERAND_CMP 0x0050
+#define BY_OPERAND_ADD 0x0051
+#define BY_OPERAND_SUB 0x0052
+#define BY_OPERAND_MUL 0x0053
+#define BY_OPERAND_DIV 0x0054
+#define BY_OPERAND_MOD 0x0055
+
+// other
+#define BY_OPCODE_TYPE uint16_t
+#define BY_OPCODE_PRINT "%hu"
 
